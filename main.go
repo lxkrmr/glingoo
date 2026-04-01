@@ -53,6 +53,8 @@ func main() {
 	switch remaining[0] {
 	case "export":
 		cmd.RunExport(remaining[1:], conn)
+	case "install":
+		cmd.RunInstall(remaining[1:], conn)
 	case "help":
 		fmt.Println(help)
 	default:
