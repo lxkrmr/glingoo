@@ -86,6 +86,37 @@ func findLangID(client *godoorpc.Client, lang string) (int, error) {
 	return int(id), nil
 }
 
+// loadLanguageTerms loads language terms into Odoo via the language install wizard — side effect.
+func loadLanguageTerms(client *godoorpc.Client, langID int, lang string) error {
+	wizardID, err := client.ExecuteKW(
+		"base.language.install", "create",
+		godoorpc.Args{map[string]any{
+			"lang_ids":  []any{[]any{6, 0, []int{langID}}},
+			"overwrite": true,
+		}},
+		godoorpc.KWArgs{},
+	)
+	if err != nil {
+		return fmt.Errorf("could not create language install wizard: %w", err)
+	}
+
+	wid, ok := wizardID.(float64)
+	if !ok {
+		return fmt.Errorf("unexpected wizard id type")
+	}
+
+	_, err = client.ExecuteKW(
+		"base.language.install", "lang_install",
+		godoorpc.Args{[]int{int(wid)}},
+		godoorpc.KWArgs{},
+	)
+	if err != nil {
+		return fmt.Errorf("could not load language terms for %q: %w", lang, err)
+	}
+
+	return nil
+}
+
 // RunInstall executes the install command: loads language terms into Odoo.
 func RunInstall(args []string, conn ConnFlags) {
 	input, err := parseInstallArgs(args)
@@ -109,34 +140,8 @@ func RunInstall(args []string, conn ConnFlags) {
 		os.Exit(1)
 	}
 
-	// Step 1: create language install wizard
-	wizardID, err := client.ExecuteKW(
-		"base.language.install", "create",
-		godoorpc.Args{map[string]any{
-			"lang_ids":  []any{[]any{6, 0, []int{langID}}},
-			"overwrite": true,
-		}},
-		godoorpc.KWArgs{},
-	)
-	if err != nil {
-		write(errorPayload("install", fmt.Errorf("could not create language install wizard: %w", err)))
-		os.Exit(1)
-	}
-
-	wid, ok := wizardID.(float64)
-	if !ok {
-		write(errorPayload("install", fmt.Errorf("unexpected wizard id type")))
-		os.Exit(1)
-	}
-
-	// Step 2: execute wizard
-	_, err = client.ExecuteKW(
-		"base.language.install", "lang_install",
-		godoorpc.Args{[]int{int(wid)}},
-		godoorpc.KWArgs{},
-	)
-	if err != nil {
-		write(errorPayload("install", fmt.Errorf("could not load language terms for %q: %w", input.lang, err)))
+	if err := loadLanguageTerms(client, langID, input.lang); err != nil {
+		write(errorPayload("install", err))
 		os.Exit(1)
 	}
 
