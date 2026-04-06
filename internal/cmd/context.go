@@ -183,7 +183,7 @@ func CreateContextInteractive(name string) error {
 		return errors.New("User is required")
 	}
 
-	password, err := readPassword("Password (hidden): ")
+	password, err := readPassword("Password: ")
 	if err != nil {
 		return err
 	}
