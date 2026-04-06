@@ -81,8 +81,7 @@ func runContextCreate(args []string) {
 	}
 
 	write(successPayload("context create", map[string]any{
-		"name":    name,
-		"message": fmt.Sprintf("Context %q created and set as current", name),
+		"name": name,
 	}))
 }
 
@@ -93,32 +92,17 @@ func runContextList() {
 		os.Exit(1)
 	}
 
-	if len(names) == 0 {
-		write(successPayload("context list", map[string]any{
-			"contexts": []string{},
-			"message":  "No contexts yet - run 'glingoo context create <name>' to add one",
-		}))
-		return
-	}
-
-	// Sort for consistent output
-	// (in practice Go maps are unordered, but we'll leave it as is for now)
-	contexts := make([]map[string]any, len(names))
+	contexts := make([]string, len(names))
 	for i, name := range names {
-		marker := " "
 		if name == current {
-			marker = "*"
-		}
-		contexts[i] = map[string]any{
-			"name":    name,
-			"current": name == current,
-			"marker":  marker,
+			contexts[i] = "* " + name
+		} else {
+			contexts[i] = "  " + name
 		}
 	}
 
 	write(successPayload("context list", map[string]any{
 		"contexts": contexts,
-		"current":  current,
 	}))
 }
 
@@ -153,8 +137,7 @@ func runContextUse(args []string) {
 	}
 
 	write(successPayload("context use", map[string]any{
-		"name":    name,
-		"message": fmt.Sprintf("Context switched to %q", name),
+		"name": name,
 	}))
 }
 
@@ -189,7 +172,6 @@ func runContextRemove(args []string) {
 	}
 
 	write(successPayload("context remove", map[string]any{
-		"name":    name,
-		"message": fmt.Sprintf("Context %q removed", name),
+		"name": name,
 	}))
 }
