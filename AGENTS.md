@@ -28,6 +28,10 @@ Do not commit without tests where tests are meaningful.
 
 An agent must be able to discover and use `glingoo` through the CLI alone.
 
+`glingoo` is always installed from GitHub via `go install`, never built
+locally. This ensures the agent has a clean, reproducible environment
+without depending on the source tree state.
+
 `glingoo --help` and every subcommand help must be sufficient to understand
 what the tool does, how to connect, and how to call each command.
 
