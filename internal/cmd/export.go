@@ -14,7 +14,7 @@ import (
 const exportHelp = `Export a PO translation file from Odoo for an addon.
 
 Usage:
-  glingoo [connection flags] export <addon> <lang> <output-dir>
+  glingoo export <addon> <lang> <output-dir>
 
 Arguments:
   addon       Technical addon name (e.g. my_addon)
@@ -24,7 +24,9 @@ Arguments:
 
 Examples:
   glingoo export my_addon de_DE /path/to/my_addon/i18n
-  glingoo export my_addon it_IT /path/to/my_addon/i18n`
+  glingoo export my_addon it_IT /path/to/my_addon/i18n
+
+Uses the current context. Set it with: glingoo context use <name>`
 
 // exportInput holds the parsed data for an export command.
 type exportInput struct {
@@ -164,7 +166,7 @@ func savePO(path string, content []byte) (created bool, err error) {
 }
 
 // RunExport executes the export command: downloads a PO file from Odoo and saves it.
-func RunExport(args []string, conn ConnFlags) {
+func RunExport(args []string) {
 	input, err := parseExportArgs(args)
 	if err == flag.ErrHelp {
 		os.Exit(0)
@@ -174,6 +176,13 @@ func RunExport(args []string, conn ConnFlags) {
 		os.Exit(1)
 	}
 
+	_, ctx, err := GetCurrentContext()
+	if err != nil {
+		write(errorPayload("export", err))
+		os.Exit(1)
+	}
+
+	conn := ConvertContextToConnFlags(ctx)
 	client, err := conn.Connect()
 	if err != nil {
 		write(errorPayload("export", fmt.Errorf("cannot connect to Odoo at %s - is Odoo running?", conn.URL)))

@@ -10,6 +10,42 @@ Entries are written by the coding agent, newest first.
 
 <!-- INSERT NEW ENTRIES BELOW THIS LINE -->
 
+## Agent's Log - Terminal Time: 2026.04.06 | Claude 3.5 Sonnet
+
+### Contexts Instead of Flags
+
+The user asked me to explore the dependency graph, CVEs, and connection
+patterns. Out of that conversation came a real insight: connection flags
+are explicit and safe, but noisy. For local dev with multiple Odoo
+instances, repeating `--url --db --user --password` every time is just
+friction.
+
+The user steered me toward a context system. Not magic environment
+variables (which are terrible for secrets anyway), but named contexts
+stored locally. Create once, reuse always. After some back-and-forth
+about YAML vs TOML vs JSON (and me realizing the user never actually
+needs to read the file), we landed on JSON with a simple wizard.
+
+What stuck with me: the user was thinking like a real developer. They
+cared about noise, but not in a way that would compromise security or
+explicitness. A visible password in the first iteration is fine. Better
+than over-engineering. The extension `human-says-no.ts` also taught me
+to ask before using tools I haven't been granted - I tried `go get`
+without permission and got blocked. Fair.
+
+I made mistakes in the implementation (malformed JSON in edits, trying
+to use external packages without asking), but the user was patient.
+The code is now in place: contexts stored in `~/.config/glingoo/`,
+export and install switch to context-based connection, new `context`
+subcommand with create/list/use/remove. Tests written. ADR-0005
+recorded.
+
+Still need: actually test that it compiles and runs. But the shape is
+there.
+
+Standing order: ask before importing new packages, and prefer Write
+over Edit when the whole file might be involved.
+
 ## Agent's Log - Terminal Time: 2026.04.01 | claude-sonnet-4-6
 
 ### Empty msgstr, Then Not

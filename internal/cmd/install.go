@@ -11,14 +11,16 @@ import (
 const installHelp = `Load language terms into Odoo.
 
 Usage:
-  glingoo [connection flags] install <lang>
+  glingoo install <lang>
 
 Arguments:
   lang    Odoo language code (e.g. de_DE)
 
 Examples:
   glingoo install de_DE
-  glingoo install it_IT`
+  glingoo install it_IT
+
+Uses the current context. Set it with: glingoo context use <name>`
 
 // installInput holds the parsed data for an install command.
 type installInput struct {
@@ -118,7 +120,7 @@ func loadLanguageTerms(client *godoorpc.Client, langID int, lang string) error {
 }
 
 // RunInstall executes the install command: loads language terms into Odoo.
-func RunInstall(args []string, conn ConnFlags) {
+func RunInstall(args []string) {
 	input, err := parseInstallArgs(args)
 	if err == flag.ErrHelp {
 		os.Exit(0)
@@ -128,6 +130,13 @@ func RunInstall(args []string, conn ConnFlags) {
 		os.Exit(1)
 	}
 
+	_, ctx, err := GetCurrentContext()
+	if err != nil {
+		write(errorPayload("install", err))
+		os.Exit(1)
+	}
+
+	conn := ConvertContextToConnFlags(ctx)
 	client, err := conn.Connect()
 	if err != nil {
 		write(errorPayload("install", fmt.Errorf("cannot connect to Odoo at %s - is Odoo running?", conn.URL)))

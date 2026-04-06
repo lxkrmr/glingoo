@@ -8,6 +8,9 @@ A CLI tool for managing Odoo translations.
 Do not use production credentials with glingoo.
 
 ```sh
+# Create a connection context (one time)
+glingoo context create mydev
+
 # export a PO translation file from Odoo
 glingoo export my_addon de_DE /path/to/my_addon/i18n
 
@@ -29,25 +32,43 @@ If `@latest` resolves to an older version after a new release:
 GOPROXY=direct go install github.com/lxkrmr/glingoo@latest
 ```
 
+## Setup
+
+Before using `export` or `install`, create a connection context:
+
+```sh
+glingoo context create mydev
+```
+
+This will prompt for:
+- URL (e.g. http://localhost:8069)
+- Database name
+- Login user
+- Password
+
+The context is saved to `~/.config/glingoo/contexts.json` and can be
+reused. If you have multiple Odoo instances:
+
+```sh
+glingoo context create mydev
+glingoo context create staging
+glingoo context list
+glingoo context use staging   # switch between contexts
+```
+
 ## Usage
 
-Connection flags are required for every command and must come before
-the command name:
-
 ```sh
-glingoo --url <url> --db <db> --user <user> --password <password> <command> [args]
+# Manage contexts
+glingoo context create <name>   # Create a new connection context
+glingoo context list            # Show all contexts (current marked with *)
+glingoo context use <name>      # Set as current context
+glingoo context remove <name>   # Delete a context
+
+# Work with translations
+glingoo export <addon> <lang> <output-dir>
+glingoo install <lang>
 ```
-
-If you are a human typing commands, set up a shell alias:
-
-```sh
-alias glingoo='glingoo --url http://localhost:8069 --db mydb --user admin --password secret'
-glingoo export my_addon de_DE /path/to/my_addon/i18n
-glingoo install de_DE
-```
-
-If you are a coding assistant, construct the full command with flags
-directly - no alias needed.
 
 All output is JSON.
 
